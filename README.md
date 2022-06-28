@@ -1,6 +1,6 @@
 # Social Network App
 
--- working on a social network app
+## not completed yet
 
-[x]: # Language: markdown
-[x]: # Path: READEME.md
+- :white_check_mark: | Language: markdown
+- :black_square_button: | Path: READEME.md
