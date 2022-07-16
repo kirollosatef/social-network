@@ -1,4 +1,4 @@
-# Social Network App
+# Social Network APIs
 
 ## not completed yet
 
