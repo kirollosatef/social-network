@@ -2,3 +2,7 @@
 .env
 # node_modules folder
 node_modules
+# build folder
+dist
+#client folder
+client
