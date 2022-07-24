@@ -4,8 +4,10 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import bodyParser from "body-parser";
+import routes from "../routes";
 
 const app = express();
+connection();
 
 app.use(
   cors({
@@ -17,7 +19,6 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
-
-connection();
+app.use("/api", routes); // 
 
 export default app;

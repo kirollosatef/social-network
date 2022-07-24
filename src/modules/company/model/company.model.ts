@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const hashRounds = process.env.HASH_ROUNDS as unknown as number;
+const bcryptPassword = process.env.BCRYPT_PASSWORD as unknown as string;
 
 const companySchema = new mongoose.Schema({
   name: {
@@ -71,11 +72,15 @@ const companySchema = new mongoose.Schema({
 companySchema.pre("save", function (next) {
   const company = this;
   if (company.isModified("password")) {
-    bcrypt.hash(company.password, hashRounds, function (err, hash) {
-      if (err) return next(err);
-      company.password = hash;
-      next();
-    });
+    bcrypt.hash(
+      company.password + bcryptPassword,
+      hashRounds,
+      function (err, hash) {
+        if (err) return next(err);
+        company.password = hash;
+        next();
+      }
+    );
   }
   next();
 });
