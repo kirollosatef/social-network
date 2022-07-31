@@ -2,7 +2,7 @@ import User, { IUser } from "./user.model";
 import bycrypt from "bcrypt";
 import isExist from "./helpers/isExist";
 import isElementIn from "./helpers/isElementIn";
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 const notFound = {
   code: 404,
   success: false,
@@ -126,7 +126,7 @@ class userRepo {
     };
   };
   // ! follow users
-  static followUser = async (id: ObjectId, userId: ObjectId) => {
+  static followUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
     if (userId === id) {
       return {
         code: 400,
@@ -146,7 +146,7 @@ class userRepo {
         followers.push(userId);
         await User.updateMany({ _id: id }, { followers });
       }
-    } else {  
+    } else {
       return {
         ...notFound,
         "errors.ex": `user with id ${id} not found`,
@@ -155,9 +155,9 @@ class userRepo {
     const userToFollow = await User.findById(userId);
     if (userToFollow) {
       const following = userToFollow.following;
-      const idTest = id as unknown as ObjectId;
-      if (!isElementIn(idTest, following)) {
-        await User.updateMany({ _id: userId }, { $push: { following: id } });
+      if (!isElementIn(id, following) && (await isExist({ _id: id }))) {
+        following.push(id);
+        await User.updateMany({ _id: userId }, { following });
       }
     } else {
       return {
@@ -212,20 +212,32 @@ class userRepo {
     }
   };
   //! unfollow user
-  unfollowUser = async (id: ObjectId, userId: ObjectId) => {
+  static unfollowUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
     const user = await User.findById(id);
     if (user) {
       const followers = user.followers;
       if (isElementIn(userId, followers)) {
-        await User.updateMany({ _id: id }, { $pull: { followers: userId } });
+        followers.splice(followers.indexOf(userId), 1);
+        await User.updateMany({ _id: id }, { followers });
       }
+    } else {
+      return {
+        ...notFound,
+        "errors.ex": `user with id ${id} not found`,
+      };
     }
     const userToUnfollow = await User.findById(userId);
     if (userToUnfollow) {
       const following = userToUnfollow.following;
       if (isElementIn(id, following)) {
-        await User.updateMany({ _id: userId }, { $pull: { following: id } });
+        following.splice(following.indexOf(id), 1);
+        await User.updateMany({ _id: userId }, { following });
       }
+    } else {
+      return {
+        ...notFound,
+        "errors.ex": `user with id ${userId} not found`,
+      };
     }
   };
 }
