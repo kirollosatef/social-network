@@ -1,10 +1,9 @@
 import { Document, Types, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-dotenv.config();
 
-const hashRoundes = process.env.HASH_ROUNDS as unknown as number;
-const bcryptPassword = process.env.BCRYPT_PASSWORD as unknown as string;
+dotenv.config();
+const salt = Number(process.env.SALT_ROUNDS);
 enum skills {
   "HTML",
   "CSS",
@@ -16,7 +15,7 @@ enum levels {
   "advanced",
 }
 
-interface IUser extends Document {
+export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
@@ -160,15 +159,12 @@ const userSchema = new Schema<IUser>({
   },
 });
 
-// hash password before saving
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(
-      this.password + bcryptPassword,
-      hashRoundes
-    );
+  if (!this.isModified("password")) {
+    next();
   }
-  next();
+  const saltRound = await bcrypt.genSalt(salt);
+  this.password = await bcrypt.hash(this.password, saltRound);
 });
 
 const User = model("users", userSchema);

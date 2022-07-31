@@ -4,6 +4,8 @@ import userController from "../../controllers/user/user.controller";
 const app = Router();
 
 app.post("/create", userController.addUser);
-app.get("/list", userController.getUsers);
+app.get("/list", userController.listUsers);
+app.get("/list/:name", userController.listByName);
+app.get("/get/:id", userController.getUserById);
 
 export default app;
