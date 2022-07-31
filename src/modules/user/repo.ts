@@ -125,7 +125,6 @@ class userRepo {
       ...notFound,
     };
   };
-  // ! follow users
   static followUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
     if (userId === id) {
       return {
@@ -167,7 +166,7 @@ class userRepo {
     }
   };
   // ? DELETE
-  static deleteUser = async (query: object = {}) => {
+  static delete = async (query: object = {}) => {
     if (await isExist(query)) {
       return await User.deleteMany(query);
     }
@@ -211,7 +210,6 @@ class userRepo {
       });
     }
   };
-  //! unfollow user
   static unfollowUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
     const user = await User.findById(id);
     if (user) {

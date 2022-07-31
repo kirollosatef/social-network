@@ -52,12 +52,5 @@ const getUserById = async (req: Request, res: Response) => {
   res.status(200).json({ message: "success!!", Data: result });
 };
 
-//! find by years of experience!!
-const getUserByExperience = async (req: Request, res: Response) => {
-  const experience = req.params.experience;
-  const result = await userRepo.list({ experience: experience });
-  console.log(result);
-  res.status(200).json({ message: "success!!", Data: result });
-};
 
 export default {};
