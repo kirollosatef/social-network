@@ -52,5 +52,13 @@ const getUserById = async (req: Request, res: Response) => {
   res.status(200).json({ message: "success!!", Data: result });
 };
 
-
-export default {};
+export default {
+  addUser,
+  addSkill,
+  addExperience,
+  addEducation,
+  addAddress,
+  listUsers,
+  listByName,
+  getUserById,
+};
