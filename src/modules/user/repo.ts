@@ -21,7 +21,7 @@ class userRepo {
     return await newUser.save();
   };
   //? auth
-  static auth = async (email: string, password: string) => {
+  static comparePassword = async (email: string, password: string) => {
     const user = await User.findOne({ email });
     if (user) {
       const isMatch = await bycrypt.compare(password, user.password);
@@ -31,14 +31,14 @@ class userRepo {
     }
     return false;
   };
-  // retur user Role
-  static getRole = async (id: string) => {
-    const user = await User.findById(id);
-    if (user) {
-      return user.role;
-    }
-    return null;
-  };
+  //// retur user Role 
+  // static getRole = async (id: string) => {
+  //   const user = await User.findById(id);
+  //   if (user) {
+  //     return user.role;
+  //   }
+  //   return null;
+  // };
   //? SELECT
   static list = async (query: object = {}) => {
     if (await isExist(query)) {
@@ -174,11 +174,11 @@ class userRepo {
       ...notFound,
     };
   };
-  static deleteElement = async (query: object = {}, form: object = {}) => {
-    if (await isExist(query)) {
-      return await User.updateMany(query, { $pull: form });
-    }
-  };
+  // static deleteElement = async (query: object = {}, form: object = {}) => {
+  //   if (await isExist(query)) {
+  //     return await User.updateMany(query, { $pull: form });
+  //   }
+  // };
   static deleteSkill = async (query: object = {}, skillId: string) => {
     if (await isExist(query)) {
       return await User.updateMany(query, {

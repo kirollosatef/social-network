@@ -1,11 +1,33 @@
-import mongoose from "mongoose";
+import { Document, Types, Schema, model } from "mongoose";
 
-const postSchema = new mongoose.Schema({
+enum tages {
+  "HTML",
+  "CSS",
+  "JavaScript",
+}
+enum reacts {
+  "like",
+  "disLike",
+}
+
+export interface IPost extends Document {
+  tages: [tages];
+  date: Date;
+  content: string;
+  midea: string;
+  user: Types.ObjectId;
+  inCompany: { type: boolean; company: Types.ObjectId };
+  isUpdeted: { type: boolean; oldPost: Types.ObjectId };
+  reacts: [{ type: reacts; user: Types.ObjectId }];
+  comments: [Types.ObjectId];
+  isAD: boolean;
+}
+
+const postSchema = new Schema<IPost>({
   tages: [
     {
-      enum: ["food", "drink", "culture", "sport", "other"],
       type: String,
-      // add more tags from api
+      enum: tages,
     },
   ],
   date: {
@@ -19,22 +41,21 @@ const postSchema = new mongoose.Schema({
   },
   midea: {
     type: String,
-    enum: ["image", "video", "pdf", "other"],
   },
   user: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "users",
   },
   inCompany: {
     type: Boolean,
     default: false,
-    company: { type: mongoose.Schema.Types.ObjectId, ref: "companys" },
+    company: { type: Schema.Types.ObjectId, ref: "companys" },
   },
   isUpdeted: {
     type: Boolean,
     default: false,
     oldPost: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "posts",
     },
   },
@@ -42,17 +63,17 @@ const postSchema = new mongoose.Schema({
     {
       type: {
         type: String,
-        enum: ["like", "dislike", "love", "haha", "wow", "sad", "angry"],
+        enum: reacts,
       },
       user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "users",
       },
     },
   ],
   comments: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "comments",
     },
   ],
@@ -62,6 +83,6 @@ const postSchema = new mongoose.Schema({
   },
 });
 
-const Post = mongoose.model("posts", postSchema);
+const Post = model("posts", postSchema);
 
-module.exports = Post;
+export default Post;
