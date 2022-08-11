@@ -1,5 +1,16 @@
-import Post, { IPost } from "./post.model";
+import Post from "./post.model";
 import User from "../user/user.model";
+
+const notFound = {
+  code: 404,
+  success: false,
+  errors: [
+    {
+      key: "record",
+      value: `record not found`,
+    },
+  ],
+};
 
 class postRepo {
   static create = async (query: object = {}) => {
@@ -16,6 +27,10 @@ class postRepo {
         isUpdeted: isUpdeted,
       };
       return await Post.updateOne(query, newPost);
+    } else {
+      return {
+        ...notFound,
+      };
     }
   };
 
@@ -25,7 +40,15 @@ class postRepo {
       const post = await Post.findById({ _id: postId });
       if (post) {
         return await Post.deleteOne({ _id: postId });
+      } else {
+        return {
+          ...notFound,
+        };
       }
+    } else {
+      return {
+        ...notFound,
+      };
     }
   };
 }
