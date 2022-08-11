@@ -17,14 +17,14 @@ export interface IPost extends Document {
   midea: string;
   user: Types.ObjectId;
   inCompany: { type: boolean; company: Types.ObjectId };
-  isUpdeted: { type: boolean; oldPost: Types.ObjectId };
+  isUpdeted: boolean;
   reacts: [{ type: reacts; user: Types.ObjectId }];
   comments: [Types.ObjectId];
   isAD: boolean;
 }
 
 const postSchema = new Schema<IPost>({
-  tages: [
+tages: [
     {
       type: String,
       enum: tages,
@@ -54,10 +54,6 @@ const postSchema = new Schema<IPost>({
   isUpdeted: {
     type: Boolean,
     default: false,
-    oldPost: {
-      type: Schema.Types.ObjectId,
-      ref: "posts",
-    },
   },
   reacts: [
     {
