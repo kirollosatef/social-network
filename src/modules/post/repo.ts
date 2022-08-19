@@ -13,6 +13,16 @@ const notFound = {
 };
 
 class postRepo {
+  static list = async (query: object = {}) => {
+    const result = await Post.find(query);
+    return result;
+  };
+
+  static get = async (query: object = {}) => {
+    const result = await Post.findOne(query);
+    return result;
+  };
+
   static create = async (query: object = {}) => {
     const newPost = new Post(query);
     return await newPost.save();

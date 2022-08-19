@@ -1,6 +1,5 @@
 import User, { IUser } from "./user.model";
 import bycrypt from "bcrypt";
-import isExist from "./helpers/isExist";
 import isElementIn from "./helpers/isElementIn";
 import { Types } from "mongoose";
 const notFound = {
@@ -12,6 +11,27 @@ const notFound = {
       value: `record not found`,
     },
   ],
+};
+export const isExist = async (query: object = {}) => {
+  const record: IUser | null = await User.findOne(query);
+  if (record) {
+    return {
+      code: 200,
+      success: true,
+      record,
+    };
+  } else {
+    return {
+      code: 404,
+      success: false,
+      errors: [
+        {
+          key: "record",
+          value: `record not found`,
+        },
+      ],
+    };
+  }
 };
 class userRepo {
   // TODO: JWT token
@@ -53,7 +73,7 @@ class userRepo {
   //? UPDATE
   static update = async (query: object = {}, form: object = {}) => {
     if (await isExist(query)) {
-      return await User.updateMany(query, form);
+      return await User.updateOne(query, form);
     }
     return {
       ...notFound,
@@ -63,9 +83,25 @@ class userRepo {
   static addSkill = async (query: object = {}, form: IUser["skills"][0]) => {
     const user = await User.findOne(query);
     if (user) {
-      const skills = user.skills;
+      const skills = user.skills.map((skill) => {
+        return {
+          name: skill.name,
+          level: skill.level,
+        };
+      });
       if (!isElementIn(form, skills)) {
-        return await User.updateMany(query, { $push: { skills: form } });
+        return await User.updateOne(query, { $push: { skills: form } });
+      } else {
+        return {
+          code: 400,
+          success: false,
+          errors: [
+            {
+              key: "skill",
+              value: "skill already exist",
+            },
+          ],
+        };
       }
     }
     return {
@@ -78,9 +114,27 @@ class userRepo {
   ) => {
     const user = await User.findOne(query);
     if (user) {
-      const experiences = user.experiences;
+      const experiences = user.experiences.map((experience) => {
+        return {
+          company: experience.company,
+          position: experience.position,
+          from: experience.from,
+          to: experience.to,
+        };
+      });
       if (!isElementIn(form, experiences)) {
-        return await User.updateMany(query, { $push: { experiences: form } });
+        return await User.updateOne(query, { $push: { experiences: form } });
+      } else {
+        return {
+          code: 400,
+          success: false,
+          errors: [
+            {
+              key: "experience",
+              value: "experience already exist",
+            },
+          ],
+        };
       }
     }
     return {
@@ -93,9 +147,28 @@ class userRepo {
   ) => {
     const user = await User.findOne(query);
     if (user) {
-      const educations = user.educations;
+      const educations = user.educations.map((education) => {
+        return {
+          school: education.school,
+          degree: education.degree,
+          fieldOfStudy: education.fieldOfStudy,
+          from: education.from,
+          to: education.to,
+        };
+      });
       if (!isElementIn(form, educations)) {
-        return await User.updateMany(query, { $push: { educations: form } });
+        return await User.updateOne(query, { $push: { educations: form } });
+      } else {
+        return {
+          code: 400,
+          success: false,
+          errors: [
+            {
+              key: "education",
+              value: "education already exist",
+            },
+          ],
+        };
       }
     }
     return {
@@ -108,16 +181,33 @@ class userRepo {
   ) => {
     const user = await User.findOne(query);
     if (user) {
-      const addresses = user.addresses;
+      const addresses = user.addresses.map((address) => {
+        return {
+          street: address.street,
+          city: address.city,
+          country: address.country,
+        };
+      });
       if (!isElementIn(form, addresses)) {
-        return await User.updateMany(query, { $push: { addresses: form } });
+        return await User.updateOne(query, { $push: { addresses: form } });
+      } else {
+        return {
+          code: 400,
+          success: false,
+          errors: [
+            {
+              key: "address",
+              value: "address already exist",
+            },
+          ],
+        };
       }
     }
     return {
       ...notFound,
     };
   };
-  static followUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
+  static followUser = async (id: string, userId: string) => {
     if (userId === id) {
       return {
         code: 400,
@@ -132,10 +222,14 @@ class userRepo {
     }
     const user = await User.findById(id);
     if (user) {
+      const userId1 = userId as unknown as Types.ObjectId;
       const followers = user.followers;
-      if (!isElementIn(userId, followers) && (await isExist({ _id: userId }))) {
-        followers.push(userId);
-        await User.updateMany({ _id: id }, { followers });
+      if (
+        !isElementIn(userId1, followers) &&
+        (await isExist({ _id: userId }))
+      ) {
+        followers.push(userId1);
+        await User.updateOne({ _id: id }, { followers });
       }
     } else {
       return {
@@ -145,10 +239,11 @@ class userRepo {
     }
     const userToFollow = await User.findById(userId);
     if (userToFollow) {
+      const id1 = id as unknown as Types.ObjectId;
       const following = userToFollow.following;
-      if (!isElementIn(id, following) && (await isExist({ _id: id }))) {
-        following.push(id);
-        await User.updateMany({ _id: userId }, { following });
+      if (!isElementIn(id1, following) && (await isExist({ _id: id }))) {
+        following.push(id1);
+        await User.updateOne({ _id: userId }, { following });
       }
     } else {
       return {
@@ -159,16 +254,17 @@ class userRepo {
   };
   // ? DELETE
   static delete = async (query: object = {}) => {
-    if (await isExist(query)) {
-      return await User.deleteMany(query);
+    if ((await (await isExist(query)).success) === true) {
+      return await User.deleteOne(query);
+    } else {
+      return {
+        ...notFound,
+      };
     }
-    return {
-      ...notFound,
-    };
   };
   static deleteSkill = async (query: object = {}, skillId: string) => {
     if (await isExist(query)) {
-      return await User.updateMany(query, {
+      return await User.updateOne(query, {
         $pull: { skills: { _id: skillId } },
       });
     }
@@ -178,32 +274,33 @@ class userRepo {
     experienceId: string
   ) => {
     if (await isExist(query)) {
-      return await User.updateMany(query, {
+      return await User.updateOne(query, {
         $pull: { experiences: { _id: experienceId } },
       });
     }
   };
   static deleteEducation = async (query: object = {}, educationId: string) => {
     if (await isExist(query)) {
-      return await User.updateMany(query, {
+      return await User.updateOne(query, {
         $pull: { educations: { _id: educationId } },
       });
     }
   };
   static deleteAddress = async (query: object = {}, addressId: string) => {
     if (await isExist(query)) {
-      return await User.updateMany(query, {
+      return await User.updateOne(query, {
         $pull: { addresses: { _id: addressId } },
       });
     }
   };
-  static unfollowUser = async (id: Types.ObjectId, userId: Types.ObjectId) => {
+  static unfollowUser = async (id: string, userId: string) => {
     const user = await User.findById(id);
     if (user) {
+      const userId1 = userId as unknown as Types.ObjectId;
       const followers = user.followers;
-      if (isElementIn(userId, followers)) {
-        followers.splice(followers.indexOf(userId), 1);
-        await User.updateMany({ _id: id }, { followers });
+      if (isElementIn(userId1, followers)) {
+        followers.splice(followers.indexOf(userId1), 1);
+        await User.updateOne({ _id: id }, { followers });
       }
     } else {
       return {
@@ -213,10 +310,11 @@ class userRepo {
     }
     const userToUnfollow = await User.findById(userId);
     if (userToUnfollow) {
+      const id1 = id as unknown as Types.ObjectId;
       const following = userToUnfollow.following;
-      if (isElementIn(id, following)) {
-        following.splice(following.indexOf(id), 1);
-        await User.updateMany({ _id: userId }, { following });
+      if (isElementIn(id1, following)) {
+        following.splice(following.indexOf(id1), 1);
+        await User.updateOne({ _id: userId }, { following });
       }
     } else {
       return {
